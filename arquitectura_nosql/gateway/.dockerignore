@@ -1,0 +1,44 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Node modules
+node_modules/
+
+# Paquetes build
+dist/
+build/
+
+# Logs
+*.log
+
+# Archivos temporales
+tmp/
+temp/
+
+# Git
+.git
+.gitignore
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.yml
+docker-compose.override.yml
+
+# Tests
+pytest_cache/
+coverage/
+.coverage
+
+# Editor / IDE
+.vscode/
+.idea/

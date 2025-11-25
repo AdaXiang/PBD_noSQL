@@ -1,0 +1,60 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+pip-wheel-metadata/
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Archivos de configuración locales
+.env
+*.env
+
+# Cache
+.cache/
+.pytest_cache/
+
+# ---- FastAPI / Uvicorn ----
+*.log
+
+# ---- Node / Frontend ----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+
+# ---- Docker ----
+*.pid
+docker-compose.override.yml
+
+# ---- VSCode / IDE ----
+.vscode/
+.idea/
+
+# ---- Sistema operativo ----
+.DS_Store
+Thumbs.db
+
+# ---- Python notebooks (si los usas) ----
+.ipynb_checkpoints/
+
+# ---- Coverage ----
+.coverage
+coverage.xml
+htmlcov/
+
+# ---- Archivo de productos temporales ----
+tmp/
+temp/
