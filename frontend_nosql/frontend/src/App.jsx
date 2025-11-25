@@ -124,8 +124,76 @@ export default function App() {
       </div>
 
       {products.length > 0 && (
-        <pre className="json">{JSON.stringify(products, null, 2)}</pre>
+        <div className="resultado">
+          <h2>Lista de productos</h2>
+
+          <ul className="lista-secciones">
+            {products.map((p, index) => (
+              <li key={index} className="seccion">
+
+                <h3>🛒 Producto {index + 1}</h3>
+
+                {/* CATALOG */}
+                {p.catalog && (
+                  <div className="bloque">
+                    <h4>📦 Catalog</h4>
+                    <pre className="json">{JSON.stringify(p.catalog.producto, null, 2)}</pre>
+
+                    <div className="operacion">
+                      <span>{p.catalog.operacion}</span>
+                      <button className="copiar"
+                        onClick={() => navigator.clipboard.writeText(p.catalog.operacion)}
+                      >📄</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* RECOMMENDATION */}
+                {p.recommendation && (
+                  <div className="bloque">
+                    <h4>⭐ Recommendation</h4>
+                    <pre className="json">{JSON.stringify(p.recommendation, null, 2)}</pre>
+
+                    <div className="operacion">
+                      <span>{p.recommendation.operacion}</span>
+                      <button className="copiar"
+                        onClick={() => navigator.clipboard.writeText(p.recommendation.operacion)}
+                      >📄</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ANALYTICS */}
+                {p.analytics && (
+                  <div className="bloque">
+                    <h4>📊 Analytics</h4>
+                    <pre className="json">
+                      {JSON.stringify(p.analytics.evento, null, 2)}
+                    </pre>
+
+                    <div className="operacion">
+                      <span>{p.analytics.operacion}</span>
+                      <button className="copiar"
+                        onClick={() => navigator.clipboard.writeText(p.analytics.operacion)}
+                      >📄</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* PRODUCTO FINAL */}
+                {p.producto && (
+                  <div className="bloque">
+                    <h4>🛒 Producto (resultado final)</h4>
+                    <pre className="json">{JSON.stringify(p.producto, null, 2)}</pre>
+                  </div>
+                )}
+
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
+
 
       <div className="divider"></div>
 
@@ -143,14 +211,100 @@ export default function App() {
       </div>
 
       {product && (
-        <>
-          <pre className="json">{JSON.stringify(product, null, 2)}</pre>
+        <div className="resultado">
+          <h2>Resultado</h2>
+          <ul className="lista-secciones">
+
+            {/* ----- CATALOGO ----- */}
+            {product.catalog && (
+              <li className="seccion">
+                <h3>📦 Catalog</h3>
+
+                <pre className="json">
+                  {JSON.stringify(product.catalog.producto, null, 2)}
+                </pre>
+
+                <div className="operacion">
+                  <span>{product.catalog.operacion}</span>
+                  <button
+                    className="copiar"
+                    onClick={() => navigator.clipboard.writeText(product.catalog.operacion)}
+                  >
+                    📄 Copiar
+                  </button>
+                </div>
+              </li>
+            )}
+
+            {/* ----- RECOMMENDATION ----- */}
+            {product.recommendation && (
+              <li className="seccion">
+                <h3>⭐ Recommendation</h3>
+
+                <pre className="json">
+                  {JSON.stringify(product.recommendation, null, 2)}
+                </pre>
+
+                <div className="operacion">
+                  <span>{product.recommendation.operacion}</span>
+                  <button
+                    className="copiar"
+                    onClick={() =>
+                      navigator.clipboard.writeText(product.recommendation.operacion)
+                    }
+                  >
+                    📄 Copiar
+                  </button>
+                </div>
+              </li>
+            )}
+
+            {/* ----- ANALYTICS ----- */}
+            {product.analytics && (
+              <li className="seccion">
+                <h3>📊 Analytics</h3>
+
+                <pre className="json">
+                  {JSON.stringify(product.analytics.evento, null, 2)}
+                </pre>
+
+                <div className="operacion">
+                  <span>{product.analytics.operacion}</span>
+                  <button
+                    className="copiar"
+                    onClick={() =>
+                      navigator.clipboard.writeText(product.analytics.operacion)
+                    }
+                  >
+                    📄 Copiar
+                  </button>
+                </div>
+              </li>
+            )}
+
+            {/* ----- PRODUCTO FINAL ----- */}
+            {product.producto && (
+              <li className="seccion">
+                <h3>🛒 Producto Final</h3>
+
+                <pre className="json">
+                  {JSON.stringify(product.producto, null, 2)}
+                </pre>
+
+                <div className="operacion">
+                  <span>(No hay operación aquí, este es el resultado final)</span>
+                </div>
+              </li>
+            )}
+
+          </ul>
 
           <button className="btn delete" onClick={deleteProduct}>
             ELIMINAR
           </button>
-        </>
+        </div>
       )}
+
 
       <div className="divider"></div>
 
