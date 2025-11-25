@@ -10,6 +10,12 @@ def crear(p:dict):
     db.productos.insert_one(p)
     return p
 
+app.post("/productos/lote")
+def crear_lote(lista: list):
+    # Inserta todos los documentos tal cual vienen
+    db.productos.insert_many(lista)
+    return {"insertados": len(lista)}
+
 @app.get("/productos")
 def listar():
     return list(db.productos.find({},{"_id":0}))
