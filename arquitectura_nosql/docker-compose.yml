@@ -1,0 +1,38 @@
+
+version: '3.9'
+services:
+  mongo:
+    image: mongo:6
+    ports: ["27017:27017"]
+
+  redis:
+    image: redis:latest
+    ports: ["6379:6379"]
+
+  riak:
+    image: basho/riak-kv
+    ports: ["8087:8087","8098:8098"]
+
+  catalog:
+    build: ./catalog
+    command: uvicorn app:app --host 0.0.0.0 --port 8001
+    ports: ["8001:8001"]
+    depends_on: [mongo]
+
+  recommendation:
+    build: ./recommendation
+    command: uvicorn app:app --host 0.0.0.0 --port 8002
+    ports: ["8002:8002"]
+    depends_on: [redis]
+
+  analytics:
+    build: ./analytics
+    command: uvicorn app:app --host 0.0.0.0 --port 8003
+    ports: ["8003:8003"]
+    depends_on: [riak]
+
+  gateway:
+    build: ./gateway
+    command: uvicorn app:app --host 0.0.0.0 --port 8000
+    ports: ["8000:8000"]
+    depends_on: [catalog,recommendation,analytics]
