@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import "./App.css";
 
+import ProductList from "./components/ProductList";
+import ProductDetail from "./components/ProductDetail";
+import CreateProduct from "./components/CreateProduct";
+import UpdateProduct from "./components/UpdateProduct";
+
 export default function App() {
   const [id, setId] = useState("");
   const [product, setProduct] = useState(null);
@@ -40,7 +45,7 @@ export default function App() {
     }
   };
 
-  // Crear un producto
+  // Crear producto
   const crearProducto = async () => {
     try {
       const res = await fetch(`http://localhost:8000/productos`, {
@@ -49,7 +54,7 @@ export default function App() {
         body: JSON.stringify(nuevo),
       });
 
-      const data = await res.json();
+      await res.json();
       setEstado("Producto creado");
       setNuevo({});
       fetchProducts();
@@ -58,7 +63,7 @@ export default function App() {
     }
   };
 
-  // Actualizar un producto
+  // Actualizar producto
   const actualizarProducto = async () => {
     try {
       const res = await fetch(`http://localhost:8000/productos/${id}`, {
@@ -67,7 +72,7 @@ export default function App() {
         body: JSON.stringify(editar),
       });
 
-      const data = await res.json();
+      await res.json();
       setEstado("Producto actualizado");
       setEditar({});
       fetchProduct();
@@ -76,7 +81,7 @@ export default function App() {
     }
   };
 
-  // Borrar un producto por ID
+  // Borrar uno
   const deleteProduct = async () => {
     try {
       const res = await fetch(`http://localhost:8000/productos/${id}`, {
@@ -92,7 +97,7 @@ export default function App() {
     }
   };
 
-  // Borrar todos los productos del catálogo
+  // Borrar todos
   const deleteProducts = async () => {
     try {
       const res = await fetch(`http://localhost:8000/productos`, {
@@ -114,86 +119,12 @@ export default function App() {
 
       {/* LISTAR Y BORRAR TODO */}
       <div className="row">
-        <button className="btn" onClick={fetchProducts}>
-          LISTA DE PRODUCTOS
-        </button>
-
-        <button className="btn delete" onClick={deleteProducts}>
-          ELIMINAR TODO
-        </button>
+        <button className="btn" onClick={fetchProducts}>LISTA DE PRODUCTOS</button>
+        <button className="btn delete" onClick={deleteProducts}>ELIMINAR TODO</button>
       </div>
 
-      {products.length > 0 && (
-        <div className="resultado">
-          <h2>Lista de productos</h2>
-
-          <ul className="lista-secciones">
-            {products.map((p, index) => (
-              <li key={index} className="seccion">
-
-                <h3>🛒 Producto {index + 1}</h3>
-
-                {/* CATALOG */}
-                {p.catalog && (
-                  <div className="bloque">
-                    <h4>📦 Catalog</h4>
-                    <pre className="json">{JSON.stringify(p.catalog.producto, null, 2)}</pre>
-
-                    <div className="operacion">
-                      <span>{p.catalog.operacion}</span>
-                      <button className="copiar"
-                        onClick={() => navigator.clipboard.writeText(p.catalog.operacion)}
-                      >📄</button>
-                    </div>
-                  </div>
-                )}
-
-                {/* RECOMMENDATION */}
-                {p.recommendation && (
-                  <div className="bloque">
-                    <h4>⭐ Recommendation</h4>
-                    <pre className="json">{JSON.stringify(p.recommendation, null, 2)}</pre>
-
-                    <div className="operacion">
-                      <span>{p.recommendation.operacion}</span>
-                      <button className="copiar"
-                        onClick={() => navigator.clipboard.writeText(p.recommendation.operacion)}
-                      >📄</button>
-                    </div>
-                  </div>
-                )}
-
-                {/* ANALYTICS */}
-                {p.analytics && (
-                  <div className="bloque">
-                    <h4>📊 Analytics</h4>
-                    <pre className="json">
-                      {JSON.stringify(p.analytics.evento, null, 2)}
-                    </pre>
-
-                    <div className="operacion">
-                      <span>{p.analytics.operacion}</span>
-                      <button className="copiar"
-                        onClick={() => navigator.clipboard.writeText(p.analytics.operacion)}
-                      >📄</button>
-                    </div>
-                  </div>
-                )}
-
-                {/* PRODUCTO FINAL */}
-                {p.producto && (
-                  <div className="bloque">
-                    <h4>🛒 Producto (resultado final)</h4>
-                    <pre className="json">{JSON.stringify(p.producto, null, 2)}</pre>
-                  </div>
-                )}
-
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
+      {/* LISTA DE PRODUCTOS */}
+      {products.length > 0 && <ProductList products={products} />}
 
       <div className="divider"></div>
 
@@ -205,157 +136,29 @@ export default function App() {
           value={id}
           onChange={(e) => setId(e.target.value)}
         />
-        <button className="btn" onClick={fetchProduct}>
-          Buscar
-        </button>
+        <button className="btn" onClick={fetchProduct}>Buscar</button>
       </div>
 
+      {/* RESULTADO INDIVIDUAL */}
       {product && (
-        <div className="resultado">
-          <h2>Resultado</h2>
-          <ul className="lista-secciones">
-
-            {/* ----- CATALOGO ----- */}
-            {product.catalog && (
-              <li className="seccion">
-                <h3>📦 Catalog</h3>
-
-                <pre className="json">
-                  {JSON.stringify(product.catalog.producto, null, 2)}
-                </pre>
-
-                <div className="operacion">
-                  <span>{product.catalog.operacion}</span>
-                  <button
-                    className="copiar"
-                    onClick={() => navigator.clipboard.writeText(product.catalog.operacion)}
-                  >
-                    📄 Copiar
-                  </button>
-                </div>
-              </li>
-            )}
-
-            {/* ----- RECOMMENDATION ----- */}
-            {product.recommendation && (
-              <li className="seccion">
-                <h3>⭐ Recommendation</h3>
-
-                <pre className="json">
-                  {JSON.stringify(product.recommendation, null, 2)}
-                </pre>
-
-                <div className="operacion">
-                  <span>{product.recommendation.operacion}</span>
-                  <button
-                    className="copiar"
-                    onClick={() =>
-                      navigator.clipboard.writeText(product.recommendation.operacion)
-                    }
-                  >
-                    📄 Copiar
-                  </button>
-                </div>
-              </li>
-            )}
-
-            {/* ----- ANALYTICS ----- */}
-            {product.analytics && (
-              <li className="seccion">
-                <h3>📊 Analytics</h3>
-
-                <pre className="json">
-                  {JSON.stringify(product.analytics.evento, null, 2)}
-                </pre>
-
-                <div className="operacion">
-                  <span>{product.analytics.operacion}</span>
-                  <button
-                    className="copiar"
-                    onClick={() =>
-                      navigator.clipboard.writeText(product.analytics.operacion)
-                    }
-                  >
-                    📄 Copiar
-                  </button>
-                </div>
-              </li>
-            )}
-
-            {/* ----- PRODUCTO FINAL ----- */}
-            {product.producto && (
-              <li className="seccion">
-                <h3>🛒 Producto Final</h3>
-
-                <pre className="json">
-                  {JSON.stringify(product.producto, null, 2)}
-                </pre>
-
-                <div className="operacion">
-                  <span>(No hay operación aquí, este es el resultado final)</span>
-                </div>
-              </li>
-            )}
-
-          </ul>
-
-          <button className="btn delete" onClick={deleteProduct}>
-            ELIMINAR
-          </button>
-        </div>
+        <ProductDetail product={product} deleteProduct={deleteProduct} />
       )}
 
+      <div className="divider"></div>
+
+      {/* CREAR */}
+      <CreateProduct nuevo={nuevo} setNuevo={setNuevo} crearProducto={crearProducto} />
 
       <div className="divider"></div>
 
-      {/* CREAR PRODUCTO */}
-      <div className="card">
-        <h3>Crear producto</h3>
-
-        <textarea
-          className="input"
-          placeholder='{"_id":"p1","nombre":"Camiseta","precio":19.99}'
-          value={JSON.stringify(nuevo, null, 2)}
-          onChange={(e) => {
-            try {
-              setNuevo(JSON.parse(e.target.value));
-            } catch {}
-          }}
-        />
-
-        <button className="btn" onClick={crearProducto}>
-          CREAR
-        </button>
-      </div>
-
-      <div className="divider"></div>
-
-      {/* ACTUALIZAR PRODUCTO */}
-      <div className="card">
-        <h3>Actualizar producto</h3>
-
-        <input
-          className="input"
-          placeholder="ID a actualizar"
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-        />
-
-        <textarea
-          className="input"
-          placeholder='{"precio": 99.99}'
-          value={JSON.stringify(editar, null, 2)}
-          onChange={(e) => {
-            try {
-              setEditar(JSON.parse(e.target.value));
-            } catch {}
-          }}
-        />
-
-        <button className="btn" onClick={actualizarProducto}>
-          ACTUALIZAR
-        </button>
-      </div>
+      {/* EDITAR */}
+      <UpdateProduct
+        id={id}
+        setId={setId}
+        editar={editar}
+        setEditar={setEditar}
+        actualizarProducto={actualizarProducto}
+      />
 
       {estado && <p className="estado">{estado}</p>}
     </div>
