@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import redis
 from dto.dto_recommendation import ProductoScore
+from dto.dto_recommedation_list import ProductosScore
 
 app = FastAPI()
 
@@ -16,8 +17,10 @@ ZSET = "productos:vistas"
 def incr(id: str):
     score = r.zincrby(ZSET, 1, id)
     return ProductoScore(
-        producto=id,
-        vistas=score,
+        detalle={
+            "producto": id,
+            "vistas": score
+        },
         operacion=f"redis.ZINCRBY('{ZSET}', 1, '{id}')"
     )
 
@@ -29,8 +32,10 @@ def incr(id: str):
 def decr(id: str):
     score = r.zincrby(ZSET, -1, id)
     return ProductoScore(
-        producto=id,
-        vistas=score,
+        detalle={
+            "producto": id,
+            "vistas": score
+        },
         operacion=f"redis.ZINCRBY('{ZSET}', -1, '{id}')"
     )
 
@@ -38,12 +43,15 @@ def decr(id: str):
 # ---------------------------------------------------------
 # 3) Obtener el TOP N de productos
 # ---------------------------------------------------------
-@app.get("/top/{n}")
+@app.get("/top/{n}", response_model=ProductoScore)
 def top(n: int):
-    return {
-        "resultado": r.zrevrange(ZSET, 0, n - 1, withscores=True),
-        "operacion": f"redis.ZREVRANGE('{ZSET}', 0, {n - 1}, WITHSCORES)"
-    }
+    resultado = r.zrevrange(ZSET, 0, n - 1, withscores=True)
+    return ProductoScore(
+        detalle={
+            "resultado": resultado,
+        },
+        operacion=f"redis.ZREVRANGE('{ZSET}', 0, {n - 1}, WITHSCORES)"
+    )
 
 
 # ---------------------------------------------------------
@@ -53,8 +61,10 @@ def top(n: int):
 def get_score(id: str):
     score = r.zscore(ZSET, id)
     return ProductoScore(
-        producto=id,
-        vistas=score,
+        detalle={
+            "producto": id,
+            "vistas": score
+        },
         operacion=f"redis.ZSCORE('{ZSET}', '{id}')"
     )
 
@@ -66,8 +76,10 @@ def get_score(id: str):
 def delete(id: str):
     r.zrem(ZSET, id)
     return ProductoScore(
-        producto=id,
-        vistas=None,
+        detalle={
+            "producto": id,
+            "vistas": None
+        },
         operacion=f"redis.ZREM('{ZSET}', '{id}')"
     )
 
@@ -75,61 +87,76 @@ def delete(id: str):
 # ---------------------------------------------------------
 # 6) Resetear todo el ZSET
 # ---------------------------------------------------------
-@app.delete("/reset")
+@app.delete("/reset", response_model=ProductoScore)
 def reset():
     r.delete(ZSET)
-    return {
-        "msg": "ranking reseteado",
-        "operacion": f"redis.DEL('{ZSET}')"
-    }
+    return ProductoScore(
+        detalle={
+            "resultado": "ranking reseteado",
+        },
+        operacion=f"redis.DEL('{ZSET}')"
+    )
 
 
 # ---------------------------------------------------------
 # 7) Insertar múltiples productos de golpe
 # ---------------------------------------------------------
-@app.post("/bulk")
+@app.post("/bulk", response_model=ProductosScore)
 def bulk_insert(productos: dict):
+    operaciones = []
 
     with r.pipeline() as pipe:
         for p, score in productos.items():
             pipe.zadd(ZSET, {p: score})
+            operaciones.append(f"pipe.zadd('{ZSET}', {{'{p}': {score}}})")
         pipe.execute()
 
-    return {
-        "msg": "bulk insert ok",
-        "productos": productos,
-        "operacion": f"redis.ZADD('{ZSET}', <bulk>)"
-    }
+    return ProductosScore(
+        detalle={
+            "producto": productos,
+            "resultado": "bulk inserción ok"
+        },
+        operacion=operaciones
+    )
 
 
 # ---------------------------------------------------------
 # 8) Obtener un rango (paginación)
 # ---------------------------------------------------------
-@app.get("/rango")
+@app.get("/rango", response_model=ProductoScore)
 def rango(start: int = 0, stop: int = 9):
-    return {
-        "resultado": r.zrevrange(ZSET, start, stop, withscores=True),
-        "operacion": f"redis.ZREVRANGE('{ZSET}', {start}, {stop}, WITHSCORES)"
-    }
+    resultado = r.zrevrange(ZSET, start, stop, withscores=True)
+    return ProductoScore(
+        detalle={
+            "resultado": resultado
+        },
+        operacion=f"redis.ZREVRANGE('{ZSET}', {start}, {stop}, WITHSCORES)"
+    )
 
 
 # ---------------------------------------------------------
 # 9) Obtener todos los productos
 # ---------------------------------------------------------
-@app.get("/all")
+@app.get("/all", response_model=ProductoScore)
 def get_all():
-    return {
-        "resultado": r.zrevrange(ZSET, 0, -1, withscores=True),
-        "operacion": f"redis.ZREVRANGE('{ZSET}', 0, -1, WITHSCORES)"
-    }
+    resultado = r.zrevrange(ZSET, 0, -1, withscores=True)
+    return ProductoScore(
+        detalle={
+            "resultado": resultado
+        },
+        operacion=f"redis.ZREVRANGE('{ZSET}', 0, -1, WITHSCORES)"
+    )
 
 
 # ---------------------------------------------------------
 # 10) Filtrar por score mínimo y máximo
 # ---------------------------------------------------------
-@app.get("/filtrar")
-def filtrar(min: float = "-inf", max: float = "+inf"):
-    return {
-        "resultado": r.zrangebyscore(ZSET, min, max, withscores=True),
-        "operacion": f"redis.ZRANGEBYSCORE('{ZSET}', {min}, {max}, WITHSCORES)"
-    }
+@app.get("/filtrar", response_model=ProductoScore)
+def filtrar(min: float = float("-inf"), max: float = float("inf")):
+    resultado = r.zrangebyscore(ZSET, min, max, withscores=True)
+    return ProductoScore(
+        detalle={
+            "resultado": resultado
+        },
+        operacion=f"redis.ZRANGEBYSCORE('{ZSET}', {min}, {max}, WITHSCORES)"
+    )

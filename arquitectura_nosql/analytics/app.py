@@ -3,7 +3,9 @@ import requests
 import time
 import os
 import json
-from dto.dto_analytics import DTOAnalytics as EventoDTO
+
+from dto.dto_analytics import DTOAnalytics
+from dto.dto_analytics_list import DTOListAnalytics
 
 app = FastAPI()
 
@@ -21,11 +23,11 @@ def riak_key_url(key: str) -> str:
     return f"{BASE_URL}/keys/{key}"
 
 
-@app.post("/evento", response_model=EventoDTO)
+# =====================================================================
+# 1) CREAR EVENTO
+# =====================================================================
+@app.post("/evento", response_model=DTOAnalytics)
 def crear_evento(evento: dict):
-    """
-    Crea un evento en Riak y devuelve un DTO consistente.
-    """
 
     key = str(int(time.time() * 1000))
     evento["timestamp"] = evento.get("timestamp", int(time.time()))
@@ -41,17 +43,17 @@ def crear_evento(evento: dict):
             detail=f"Error al guardar en Riak: {resp.text}"
         )
 
-    return EventoDTO(
+    return DTOAnalytics(
         evento=evento,
         operacion=f"riak.PUT('{url}')"
     )
 
 
-@app.get("/evento/{key}", response_model=EventoDTO)
+# =====================================================================
+# 2) OBTENER EVENTO POR ID
+# =====================================================================
+@app.get("/evento/{key}", response_model=DTOAnalytics)
 def obtener_evento(key: str):
-    """
-    Recupera un evento desde Riak y devuelve DTO.
-    """
 
     url = riak_key_url(key)
     resp = requests.get(url)
@@ -73,17 +75,17 @@ def obtener_evento(key: str):
             detail="Datos corruptos en Riak (no JSON)"
         )
 
-    return EventoDTO(
+    return DTOAnalytics(
         evento=data,
         operacion=f"riak.GET('{url}')"
     )
 
 
-@app.delete("/evento/{key}", response_model=EventoDTO)
+# =====================================================================
+# 3) BORRAR EVENTO
+# =====================================================================
+@app.delete("/evento/{key}", response_model=DTOAnalytics)
 def borrar_evento(key: str):
-    """
-    Borra un evento por key y devuelve DTO.
-    """
 
     url = riak_key_url(key)
     resp = requests.delete(url)
@@ -97,17 +99,17 @@ def borrar_evento(key: str):
             detail=f"Error al borrar en Riak: {resp.text}"
         )
 
-    return EventoDTO(
+    return DTOAnalytics(
         evento={"key": key, "status": "borrado"},
         operacion=f"riak.DELETE('{url}')"
     )
 
 
-@app.get("/eventos")
+# =====================================================================
+# 4) LISTAR TODAS LAS KEYS
+# =====================================================================
+@app.get("/eventos", response_model=DTOListAnalytics)
 def listar_eventos():
-    """
-    Lista todas las keys del bucket.
-    """
 
     url = f"{BASE_URL}/keys?keys=true"
     resp = requests.get(url)
@@ -121,4 +123,7 @@ def listar_eventos():
     data = resp.json()
     keys = data.get("keys", [])
 
-    return {"keys": keys}
+    return DTOListAnalytics(
+        evento=keys,
+        operacion=f"riak.GET('{url}')"
+    )
