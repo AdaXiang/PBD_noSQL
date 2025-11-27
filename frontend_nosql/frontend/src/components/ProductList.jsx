@@ -4,10 +4,10 @@ import OperationBlock from "./OperationBlock";
 import React from "react";
 import { useState } from "react";
 
-export default function ProductList({ products }) {
+export default function ProductList({ products, tiempo }) {
   return (
     <div className="resultado">
-        <h2>Lista de productos</h2>
+        <h2>Lista de productos {tiempo && <span style={{ fontWeight: "normal" }}>({tiempo} ms)</span>}</h2>
 
         <ul className="lista-secciones">
             {products.recommendation && (

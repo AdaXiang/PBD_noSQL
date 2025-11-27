@@ -3,6 +3,7 @@ import "./App.css";
 
 import ProductList from "./components/ProductList";
 import EventList from "./components/EventList";
+import FiltrosRecomendacion from "./components/FiltrosRecomendacion";
 import ProductDetail from "./components/ProductDetail";
 import CreateProduct from "./components/CreateProduct";
 import UpdateProduct from "./components/UpdateProduct";
@@ -12,8 +13,10 @@ export default function App() {
   const [product, setProduct] = useState(null);
   const [products, setProducts] = useState({});
   const [eventos, setEvents] = useState({});
+  const [filtros, setFiltros] = useState(false);
   const [estado, setEstado] = useState(null);
   const [menu, setMenu] = useState(1);
+  const [tiempo, setTiempo] = useState(null);
 
   const [nuevo, setNuevo] = useState({});
   const [editar, setEditar] = useState({});
@@ -21,11 +24,15 @@ export default function App() {
   // Obtener todos los productos
   const fetchProducts = async () => {
     try {
+      const inicio = performance.now();
       const res = await fetch(`http://localhost:8000/productos`);
       const data = await res.json();
+      const fin = performance.now();
+      setTiempo((fin - inicio).toFixed(2)); // ms
       setEvents({});
       setProducts(data);
       setEstado(null);
+      setFiltros(false);
       
     } catch (error) {
       console.error(error);
@@ -36,16 +43,17 @@ export default function App() {
   const fetchProduct = async () => {
     try {
       const res = await fetch(`http://localhost:8000/productos/${id}`);
-      const data = await res.json();
-      console.log(data);
       
-      if (!data) {
+      if (!res.ok) {   // 404, 500, etc.
         setEstado("Producto no encontrado");
         setProduct(null);
-      } else {
-        setProduct(data);
-        setEstado(null);
+        return;
       }
+
+      const data = await res.json();
+      console.log(data);
+      setProduct(data);
+      setEstado(null);
     } catch (error) {
       console.error(error);
       setProduct(null);
@@ -123,10 +131,28 @@ export default function App() {
   // Obtener todos los eventos
   const fetchEventos = async () => {
     try {
+      const inicio = performance.now();
       const res = await fetch(`http://localhost:8000/eventos`);
       const data = await res.json();
+      const fin = performance.now();
+      setTiempo((fin - inicio).toFixed(2)); // ms
       setEvents(data);
       setProducts({});
+      setFiltros(false);
+      setProduct(null);
+      setEstado(null);
+      
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Filtrar por vistas
+  const seccionFiltros = () => {
+    try {
+      setEvents({});
+      setProducts({});
+      setFiltros(true);
       setProduct(null);
       setEstado(null);
       
@@ -154,15 +180,20 @@ export default function App() {
           <div className="row">
             <button className="btn" onClick={fetchProducts}>Cargar lista</button>
             <button className="btn evento" onClick={fetchEventos}>Cargar Eventos</button>
+            <button className="btn filtro" onClick={seccionFiltros}>Abrir Filtros</button>
             <button className="btn delete" onClick={deleteProducts}>Eliminar Todo</button>
           </div>
 
           {Object.keys(products).length > 0 && (
-            <ProductList products={products} />
+            <ProductList products={products} tiempo={tiempo} />
           )}
 
           {Object.keys(eventos).length > 0 && (
-            <EventList events={eventos} />
+            <EventList events={eventos} tiempo={tiempo} />
+          )}
+
+          {filtros && (
+            <FiltrosRecomendacion/>
           )}
         </>
       )}

@@ -2,7 +2,7 @@ import React from "react";
 import JsonBlock from "./JsonBlock";
 import OperationBlock from "./OperationBlock";
 
-export default function EventList({ events }) {
+export default function EventList({ events, tiempo }) {
   if (!events || !events.analytics) {
     return <p>No hay eventos para mostrar</p>;
   }
@@ -11,7 +11,7 @@ export default function EventList({ events }) {
 
   return (
     <div className="event-resultado">
-        <h2>Eventos en Riak</h2>
+        <h2>Eventos en Riak {tiempo && <span style={{ fontWeight: "normal" }}>({tiempo} ms)</span>}</h2>
 
         <ul className="lista-secciones">
             {lista.map((evento, index) => (
