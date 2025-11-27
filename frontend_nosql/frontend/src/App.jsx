@@ -69,8 +69,6 @@ export default function App() {
 
   // Actualizar producto
   const actualizarProducto = async (obj) => {
-    console.log("🚀 ENVIANDO A /productos/" + id + " (PUT):", obj);
-
     try {
       const res = await fetch(`http://localhost:8000/productos/${id}`, {
         method: "PUT",

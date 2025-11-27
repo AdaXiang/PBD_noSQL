@@ -3,14 +3,31 @@ import OperationBlock from "./OperationBlock";
 
 export default function CreateProduct({ nuevo, setNuevo, crearProducto }) {
   const [rawJson, setRawJson] = useState(JSON.stringify(nuevo, null, 2));
-  const [operacion, setOperacion] = useState("db.productos.insertOne({})");
+  const [mongoOp, setMongoOp] = useState("db.productos.insertOne({})");
+  const [redisOp, setRedisOp] = useState("");
+  const [riakOp, setRiakOp] = useState("");
 
   useEffect(() => {
     try {
       const obj = JSON.parse(rawJson);
-      setOperacion(`db.productos.insertOne(${JSON.stringify(obj)})`);
+      setMongoOp(`db.productos.insertOne(${JSON.stringify(obj)})`);
+
+      const id = obj.id ?? obj._id ?? "ID_NO_ENCONTRADO";
+      setRedisOp(`redis.ZADD("productos:vistas", 0, "${id}")`);
+
+      const key = Date.now().toString();
+      const riakUrl = `http://riak:8098/types/default/buckets/eventos/keys/${key}`;
+      const evento = {
+        evento: "producto_creado",
+        producto: id
+      };
+      const eventoString = JSON.stringify(evento).replace(/'/g, "\\'");
+      setRiakOp(  `curl -X PUT '${riakUrl}' -H 'Content-Type: application/json' -d '${eventoString}'` );
+
     } catch {
-      setOperacion("JSON inválido");
+      setMongoOp("JSON inválido");
+      setRedisOp("");
+      setRiakOp("");
     }
   }, [rawJson]);
 
@@ -30,8 +47,16 @@ export default function CreateProduct({ nuevo, setNuevo, crearProducto }) {
 
       <textarea className="input" value={rawJson} onChange={(e) => setRawJson(e.target.value)} />
       <div className="row">
-        <OperationBlock operacion={operacion} />
+        <OperationBlock operacion={mongoOp} />
         <button className="btn" onClick={handleCreate}> CREAR </button>
+      </div>
+
+      <div className="row">
+        <OperationBlock operacion={redisOp} />
+      </div>
+
+      <div className="row">
+        <OperationBlock operacion={riakOp} />
       </div>
     </div>
   );
