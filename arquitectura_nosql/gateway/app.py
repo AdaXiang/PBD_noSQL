@@ -239,3 +239,92 @@ async def listar_eventos():
             recommendation={"resultado": "N/A", "operacion": "N/A"},
             analytics=dto_analytics
         )
+
+#=====================================================
+# CONSULTAS AGREGADAS
+#=====================================================
+
+# ---------------------------------------------------------
+# Obtener el TOP N de productos
+# ---------------------------------------------------------
+@app.get("/top/{n}", response_model=DTOFinal)
+async def top_productos(n: int):
+
+    async with httpx.AsyncClient() as c:
+
+        rec_res = await c.get(f"{rec_url}/top/{n}")
+        if rec_res.status_code != 200:
+            raise HTTPException(500, "Error obteniendo top productos de recommendation")
+
+        dto_rec = rec_res.json()
+
+         # Analytics
+        analytics_res = await c.post(
+            f"{analytics_url}/evento",
+            json={"evento": "top_productos", "n": n}
+        )
+        dto_analytics = analytics_res.json()
+
+        return DTOFinal(
+            producto=None,
+            catalog={"resultado": "N/A", "operacion": "N/A"},
+            recommendation=dto_rec,
+            analytics=dto_analytics
+        )
+    
+# ---------------------------------------------------------
+# Obtener un rango (paginación)
+# ---------------------------------------------------------
+@app.get("/rango", response_model=DTOFinal)
+async def rango_productos(start: int = 0, stop: int = 9):
+
+    async with httpx.AsyncClient() as c:
+
+        rec_res = await c.get(f"{rec_url}/rango", params={"start": start, "stop": stop})
+        if rec_res.status_code != 200:
+            raise HTTPException(500, "Error obteniendo rango de productos de recommendation")
+
+        dto_rec = rec_res.json()
+
+         # Analytics
+        analytics_res = await c.post(
+            f"{analytics_url}/evento",
+            json={"evento": "rango_productos", "start": start, "stop": stop}
+        )
+        dto_analytics = analytics_res.json()
+
+        return DTOFinal(
+            producto=None,
+            catalog={"resultado": "N/A", "operacion": "N/A"},
+            recommendation=dto_rec,
+            analytics=dto_analytics
+        )
+
+# ---------------------------------------------------------
+# Filtrar por score mínimo y máximo
+# ---------------------------------------------------------
+@app.get("/filtrar", response_model=DTOFinal)   
+async def filtrar_productos(min: float = float("-inf"), max: float = float("inf")):
+
+    async with httpx.AsyncClient() as c:
+
+        rec_res = await c.get(f"{rec_url}/filtrar", params={"min": min, "max": max})
+        if rec_res.status_code != 200:
+            raise HTTPException(500, "Error filtrando productos de recommendation")
+
+        dto_rec = rec_res.json()
+
+         # Analytics
+        analytics_res = await c.post(
+            f"{analytics_url}/evento",
+            json={"evento": "filtrar_productos", "min": min, "max": max}
+        )
+        dto_analytics = analytics_res.json()
+
+        return DTOFinal(
+            producto=None,
+            catalog={"resultado": "N/A", "operacion": "N/A"},
+            recommendation=dto_rec,
+            analytics=dto_analytics
+        )
+
