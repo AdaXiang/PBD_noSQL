@@ -216,3 +216,26 @@ async def actualizar_producto(id: str, datos: dict):
             recommendation=dto_rec,
             analytics=dto_analytics
         )
+
+# ====================================================================
+#   GET /eventos → listar keys de eventos en Riak
+# ====================================================================
+@app.get("/eventos", response_model=DTOFinal)
+async def listar_eventos():
+
+    async with httpx.AsyncClient() as c:
+
+        analytics_res = await c.get(f"{analytics_url}/eventos")
+
+        if analytics_res.status_code != 200:
+            raise HTTPException(500, "Error obteniendo eventos de analytics")
+
+        dto_analytics = analytics_res.json()
+
+        # Retornar solo analytics
+        return DTOFinal(
+            producto=None,
+            catalog={"resultado": "N/A", "operacion": "N/A"},
+            recommendation={"resultado": "N/A", "operacion": "N/A"},
+            analytics=dto_analytics
+        )

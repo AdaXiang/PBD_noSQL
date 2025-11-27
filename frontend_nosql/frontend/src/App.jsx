@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./App.css";
 
 import ProductList from "./components/ProductList";
+import EventList from "./components/EventList";
 import ProductDetail from "./components/ProductDetail";
 import CreateProduct from "./components/CreateProduct";
 import UpdateProduct from "./components/UpdateProduct";
@@ -10,6 +11,7 @@ export default function App() {
   const [id, setId] = useState("");
   const [product, setProduct] = useState(null);
   const [products, setProducts] = useState({});
+  const [eventos, setEvents] = useState({});
   const [estado, setEstado] = useState(null);
   const [menu, setMenu] = useState(1);
 
@@ -21,6 +23,7 @@ export default function App() {
     try {
       const res = await fetch(`http://localhost:8000/productos`);
       const data = await res.json();
+      setEvents({});
       setProducts(data);
       setEstado(null);
       
@@ -117,6 +120,21 @@ export default function App() {
     }
   };
 
+  // Obtener todos los eventos
+  const fetchEventos = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/eventos`);
+      const data = await res.json();
+      setEvents(data);
+      setProducts({});
+      setProduct(null);
+      setEstado(null);
+      
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div id="containerPrincipal">
       <h1>NoSQL (MongoDB/Redis/Riak)</h1>
@@ -135,11 +153,16 @@ export default function App() {
           <h2>Lista completa</h2>
           <div className="row">
             <button className="btn" onClick={fetchProducts}>Cargar lista</button>
+            <button className="btn evento" onClick={fetchEventos}>Cargar Eventos</button>
             <button className="btn delete" onClick={deleteProducts}>Eliminar Todo</button>
           </div>
 
           {Object.keys(products).length > 0 && (
             <ProductList products={products} />
+          )}
+
+          {Object.keys(eventos).length > 0 && (
+            <EventList events={eventos} />
           )}
         </>
       )}
